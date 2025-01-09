@@ -33,6 +33,11 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 @EnableDiscoveryClient
 public class DefenseDrillSecurityApplication {
+	// TODO: TDD the database layer
+	// TODO: TDD the RestApi layer (database)
+	// TODO: TDD the RestAPI layer (verification/validation)
+	// TODO: controllers for user endpoints
+	// TODO: Address all startup warnings
 
 	public static void main(String[] args) {
 		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
