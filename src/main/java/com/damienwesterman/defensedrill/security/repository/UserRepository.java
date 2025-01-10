@@ -24,25 +24,19 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.repository;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import java.util.Optional;
 
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: TDD the database layer
-	// TODO: Make sure to check for named constraints
-	// TODO: TDD the RestApi layer (database)
-	// TODO: TDD the RestAPI layer (verification/validation)
-	// TODO: controllers for user endpoints
-	// TODO: make sure to make the global exception handler
-	// TODO: Address all startup warnings
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
+import com.damienwesterman.defensedrill.security.entity.UserEntity;
 
+/**
+ * Database repository for {@link UserEntity}.
+ */
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    Optional<UserEntity> findByName(String name);
 }
