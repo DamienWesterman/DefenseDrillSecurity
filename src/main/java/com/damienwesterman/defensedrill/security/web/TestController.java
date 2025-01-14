@@ -3,6 +3,7 @@ package com.damienwesterman.defensedrill.security.web;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,5 +40,10 @@ public class TestController {
     public ResponseEntity<UserEntity> update(@PathVariable Long id, @RequestBody @Valid UserEntity user) {
         user.setId(id);
         return ResponseEntity.ok(service.update(user));
+    }
+
+    @GetMapping("/encrypt/{string}")
+    public String get(@PathVariable String string) {
+        return new BCryptPasswordEncoder().encode(string);
     }
 }

@@ -36,6 +36,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.damienwesterman.defensedrill.security.entity.UserEntity;
+import com.damienwesterman.defensedrill.security.exception.DatabaseInsertException;
 import com.damienwesterman.defensedrill.security.repository.UserRepository;
 import com.damienwesterman.defensedrill.security.util.Constants;
 
@@ -60,10 +61,10 @@ public class UserService {
         user.setId(null);
 
         if (!isValidRoles(user.getRoles())) {
-            throw new IllegalArgumentException("Roles are not valid");
+            throw new DatabaseInsertException("Roles are not valid");
         }
 
-        return repo.save(user);
+        return ErrorMessageUtils.trySave(user, repo);
     }
 
     /**
@@ -125,14 +126,14 @@ public class UserService {
     public UserEntity update(@NonNull UserEntity user) {
         if (null == user.getId()) {
             // This would cause a 'create' operation when repo.save() is called
-            throw new NullPointerException("ID is null");
+            throw new DatabaseInsertException("ID is null");
         }
 
         if (!isValidRoles(user.getRoles())) {
-            throw new IllegalArgumentException("Roles are not valid");
+            throw new DatabaseInsertException("Roles are not valid");
         }
 
-        return repo.save(user);
+        return ErrorMessageUtils.trySave(user, repo);
     }
 
     /**

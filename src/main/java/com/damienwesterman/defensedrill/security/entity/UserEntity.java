@@ -60,6 +60,12 @@ public class UserEntity {
     @Size(min = 6, max = 31)
     private String name;
 
+    /** Should be the ENCRYPTED password. */
+    @Column
+    @NotEmpty
+    @Size(min = 32, max = 255)
+    private String password;
+
     @Column
     @NotNull
     @Size(max = 511)
