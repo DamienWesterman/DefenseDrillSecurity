@@ -24,22 +24,27 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.web;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: TDD the RestAPI layer (verification/validation)
-	// TODO: controllers for user endpoints (TDD on this one too, especially create etc)
-	// TODO: make sure to make the global exception handler
-	// TODO: Address all startup warnings
+@Controller
+public class WebAuthenticationController {
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
+    @GetMapping("/logout")
+    public String logoutPage() {
+        return "logout";
+    }
 
+    @GetMapping("/")
+    @ResponseBody
+    public String home() {
+        return "Home Page";
+    }
 }
