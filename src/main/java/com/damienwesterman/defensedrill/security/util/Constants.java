@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 
 public class Constants {
     public static enum UserRoles {
-        USER("ROLE_USER"),
-        ADMIN("ROLE_ADMIN");
+        USER("USER"),
+        ADMIN("ADMIN");
 
         private String roleString;
 

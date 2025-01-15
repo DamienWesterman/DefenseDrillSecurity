@@ -3,6 +3,8 @@ package com.damienwesterman.defensedrill.security.web;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.damienwesterman.defensedrill.security.entity.UserEntity;
 import com.damienwesterman.defensedrill.security.service.UserService;
+import com.damienwesterman.defensedrill.security.web.dto.UserDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/test")
 public class TestController {
     private final UserService service;
+    private final PasswordEncoder passwordEncoder;
 
-    @PostMapping("/")
-    public ResponseEntity<UserEntity> create(@RequestBody @Valid UserEntity user) {
-        return ResponseEntity.ok(service.create(user));
+    @PostMapping
+    public ResponseEntity<UserEntity> create(@RequestBody @Valid UserDTO user) {
+        return ResponseEntity.ok(service.create(user.toEntity(null, passwordEncoder)));
     }
 
     @GetMapping
@@ -38,9 +42,13 @@ public class TestController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<UserEntity> update(@PathVariable Long id, @RequestBody @Valid UserEntity user) {
-        user.setId(id);
-        return ResponseEntity.ok(service.update(user));
+    public ResponseEntity<UserEntity> update(@PathVariable Long id, @RequestBody @Valid UserDTO user) {
+        return ResponseEntity.ok(service.update(user.toEntity(id, passwordEncoder)));
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 
     @GetMapping("/home")
