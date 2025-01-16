@@ -24,24 +24,7 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.web.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: TDD the RestAPI layer (verification/validation)
-	// TODO: controllers for user endpoints (TDD on this one too, especially for create etc)
-	// TODO: create users lists and things endoints
-	// TODO: make sure to make the global exception handler (check every time of exception we throw, plus those handled in mvc) - should maybe return /login?error=true
-	// TODO: Double check all endpoints and their access
-	// TODO: Address all startup warnings
-
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
-
+public record LoginDTO(String username, String password) {
 }
