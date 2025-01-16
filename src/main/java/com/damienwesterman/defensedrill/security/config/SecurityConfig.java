@@ -28,7 +28,6 @@ package com.damienwesterman.defensedrill.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -43,10 +42,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.damienwesterman.defensedrill.security.service.DrillUserDetailsService;
-import com.damienwesterman.defensedrill.security.util.Constants.UserRoles;
 
 import lombok.RequiredArgsConstructor;
 
@@ -55,25 +52,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final DrillUserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
             .authorizeHttpRequests(registry -> {
-                registry.requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll();
-                registry.requestMatchers("/main.css").permitAll();
-                registry.requestMatchers("/login").permitAll();
-                registry.requestMatchers("/log_in").permitAll();
-                registry.requestMatchers("/authenticate").permitAll();
-                registry.anyRequest().hasRole(UserRoles.ADMIN.getStringRepresentation());
+                /*
+                 * Secured endpoints defined in gateway, excluded here for simplicity of design
+                 * and due to the low risk nature of this application.
+                 */
+                registry.anyRequest().permitAll();
             })
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .httpBasic(HttpBasicConfigurer::disable)
             .formLogin(FormLoginConfigurer::disable)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             // TODO: Figure out the proper csrf
             .csrf(AbstractHttpConfigurer::disable)
             .build();
