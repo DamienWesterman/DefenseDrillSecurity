@@ -26,51 +26,30 @@
 
 package com.damienwesterman.defensedrill.security.web.dto;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.List;
+
+import org.springframework.lang.NonNull;
 
 import com.damienwesterman.defensedrill.security.entity.UserEntity;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * TODO: Doc comments
  */
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
-@Builder
-public class UserDTO {
-    @NotEmpty
-    @Size(min = 6, max = 31)
-    private String name;
-    @NotEmpty
-    @Size(min = 8, max = 31)
-    private String password;
+@AllArgsConstructor
+public class UserInfoDTO {
+    private String username;
+    private List<String> roles;
 
-    @NotNull
-    @Size(max = 511)
-    /** Comma separated list of roles */
-    private String roles;
-
-    /**
-     * TODO: Doc comments
-     *
-     * @param id
-     * @param passwordEncoder
-     * @return
-     */
-    public UserEntity toEntity(Long id, PasswordEncoder passwordEncoder) {
-        return UserEntity.builder()
-            .id(id)
-            .name(this.name)
-            .password(passwordEncoder.encode(this.password))
-            .roles(roles)
-            .build();
+    public UserInfoDTO(@NonNull UserEntity entity) {
+        this.username = entity.getName();
+        this.roles = List.of(entity.getRoles().split(","));
     }
 }

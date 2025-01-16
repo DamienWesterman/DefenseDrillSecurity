@@ -88,7 +88,7 @@ public class WebAuthenticationController {
 
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
                 // TODO: Test this, how do we propogate the starting point?
-            .header(HttpHeaders.LOCATION, "/test")
+            .header(HttpHeaders.LOCATION, "/")
             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
             .build();
     }
@@ -99,6 +99,7 @@ public class WebAuthenticationController {
         return "logout";
     }
 
+    // TODO: REMOVE after testing
     @GetMapping("/")
     @ResponseBody
     public String home() {
