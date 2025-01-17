@@ -9,7 +9,7 @@
  *                            *
  \****************************/
 /*
- * Copyright 2025 Damien Westerman
+ * Copyright 2024 Damien Westerman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,21 +24,35 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.web.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.lang.NonNull;
 
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: make sure to make the global exception handler (check every time of exception we throw, plus those handled in mvc) - should maybe return /login?error=true
-	// TODO: Double check all endpoints and their access
-	// TODO: Address all startup warnings
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
+/**
+ * DTO to send descriptive error messages back to caller.
+*/
+@Builder
+@Getter
+@Setter
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
+public class ErrorMessageDTO {
+    @NonNull
+    private String error;
 
+    @NonNull
+    private String message;
+
+    @Override
+    public String toString() {
+        return error + ": " + message;
+    }
 }

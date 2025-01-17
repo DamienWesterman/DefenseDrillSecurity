@@ -38,17 +38,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * TODO: Doc comments
+ * Contains all the public data for a user.
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfoDTO {
+    private Long id;
     private String username;
     private List<String> roles;
 
     public UserInfoDTO(@NonNull UserEntity entity) {
+        this.id = entity.getId();
         this.username = entity.getName();
         this.roles = List.of(entity.getRoles().split(","));
     }

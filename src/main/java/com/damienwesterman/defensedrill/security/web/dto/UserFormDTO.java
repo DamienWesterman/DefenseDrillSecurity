@@ -40,7 +40,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 /**
- * TODO: Doc comments
+ * All data for creating or updating user information.
  */
 @Data
 public class UserFormDTO {

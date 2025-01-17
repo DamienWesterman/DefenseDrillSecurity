@@ -37,13 +37,16 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.damienwesterman.defensedrill.security.exception.DatabaseInsertException;
+import com.damienwesterman.defensedrill.security.web.dto.ErrorMessageDTO;
 
 /**
  * TODO: Doc comments
@@ -65,7 +68,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         });
 
         return ResponseEntity.badRequest()
-            .body(errorMessage.toString());
+            .body(ErrorMessageDTO.builder()
+                .error("Malformed Argument")
+                .message(errorMessage.toString())
+                .build()
+            );
     }
 
     @Override
@@ -74,7 +81,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpStatusCode status, @NonNull WebRequest request) {
         // Ex. user provides a String for a Long path ID variable
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ex.getLocalizedMessage());
+            .body(ErrorMessageDTO.builder()
+                .error("Type Mismatch")
+                .message(ex.getLocalizedMessage())
+                .build()
+            );
     }
 
     @Override
@@ -83,36 +94,80 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
         // Ex. user neglects to provide correct body arguments and fails validation
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body("A body is required for this request.");
+            .body(ErrorMessageDTO.builder()
+                .error("Missing Body")
+                .message("A body is required for this request.")
+                .build()
+            );
     }
 
     @ExceptionHandler(DatabaseInsertException.class)
-    public ResponseEntity<String> handleDatabaseInsertException(DatabaseInsertException die) {
+    public ResponseEntity<ErrorMessageDTO> handleDatabaseInsertException(DatabaseInsertException die) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(die.getMessage());
+            .body(ErrorMessageDTO.builder()
+                .error("Database Insert Error")
+                .message(die.getMessage())
+                .build()
+            );
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException nsee) {
+    public ResponseEntity<ErrorMessageDTO> handleNoSuchElementException(NoSuchElementException nsee) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(nsee.getMessage());
+            .body(ErrorMessageDTO.builder()
+                .error("Resource Not Found")
+                .message(nsee.getMessage())
+                .build()
+            );
     }
 
     @ExceptionHandler(IndexOutOfBoundsException.class)
-    public ResponseEntity<String> handleIndexOutOfBoundsException(IndexOutOfBoundsException ioobe) {
+    public ResponseEntity<ErrorMessageDTO> handleIndexOutOfBoundsException(IndexOutOfBoundsException ioobe) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(ioobe.getMessage());
+            .body(ErrorMessageDTO.builder()
+                .error("Index Out Of Bounds")
+                .message(ioobe.getMessage())
+                .build()
+            );
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-    public ResponseEntity<String> handleLockingFailureException(ObjectOptimisticLockingFailureException oolfe) {
+    public ResponseEntity<ErrorMessageDTO> handleLockingFailureException(ObjectOptimisticLockingFailureException oolfe) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body("Old data: please refresh and try again");
+            .body(ErrorMessageDTO.builder()
+                .error("Update Conflict")
+                .message("Old data: please refresh and try again")
+                .build()
+            );
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorMessageDTO> handleResponseStatusException(ResponseStatusException rse) {
+        return ResponseEntity.status(rse.getStatusCode())
+            .body(ErrorMessageDTO.builder()
+                .error(rse.getStatusCode().toString())
+                .message(rse.getMessage())
+                .build()
+            );
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorMessageDTO> handleUsernameNotFoundException(UsernameNotFoundException unfe) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorMessageDTO.builder()
+                .error("Invalid Credentials")
+                .message(unfe.getMessage())
+                .build()
+            );
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception e) {
+    public ResponseEntity<ErrorMessageDTO> handleGenericException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("An unexpected error has occurred.");
+            .body(ErrorMessageDTO.builder()
+                .error("Unknown Error")
+                .message("An unexpected error has occurred.")
+                .build()
+            );
     }
 }
