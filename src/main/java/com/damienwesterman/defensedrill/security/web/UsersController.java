@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.damienwesterman.defensedrill.security.entity.UserEntity;
 import com.damienwesterman.defensedrill.security.service.UserService;
-import com.damienwesterman.defensedrill.security.web.dto.UserCreateDTO;
+import com.damienwesterman.defensedrill.security.web.dto.UserFormDTO;
 import com.damienwesterman.defensedrill.security.web.dto.UserInfoDTO;
 
 import jakarta.validation.Valid;
@@ -72,11 +73,26 @@ public class UsersController {
     }
 
     @PostMapping
-    public ResponseEntity<UserInfoDTO> createUser(@RequestBody @Valid UserCreateDTO user) {
+    public ResponseEntity<UserInfoDTO> createUser(@RequestBody @Valid UserFormDTO user) {
         UserEntity createdUser = service.create(user.toEntity(null, passwordEncoder));
         return ResponseEntity
             .created(URI.create(ENDPOINT + "/" + createdUser.getId()))
             .body(new UserInfoDTO(createdUser)
+        );
+    }
+
+    @GetMapping("/roles/{role}")
+    public ResponseEntity<List<UserInfoDTO>> getAllUsersByRole(@PathVariable String role) {
+        List<UserEntity> users = service.findAllByRole(role);
+
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(
+            users.stream()
+                .map(UserInfoDTO::new)
+                .collect(Collectors.toList())
         );
     }
 
@@ -89,5 +105,24 @@ public class UsersController {
         }
 
         return ResponseEntity.ok(new UserInfoDTO(optUser.get()));
+    }
+
+    @PostMapping("/id/{id}")
+    public ResponseEntity<UserInfoDTO> updateUserById(@PathVariable Long id,
+            @RequestBody UserFormDTO user) {
+        if (service.find(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        UserEntity updatedUser = service.update(user.toEntity(id, passwordEncoder));
+        return ResponseEntity
+            .ok(new UserInfoDTO(updatedUser)
+        );
+    }
+
+    @DeleteMapping("/id/{id}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

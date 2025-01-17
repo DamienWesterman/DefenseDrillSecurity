@@ -27,7 +27,8 @@
 package com.damienwesterman.defensedrill.security.endToEnd;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.util.List;
@@ -45,7 +46,7 @@ import com.damienwesterman.defensedrill.security.entity.UserEntity;
 import com.damienwesterman.defensedrill.security.repository.UserRepository;
 import com.damienwesterman.defensedrill.security.util.Constants.UserRoles;
 import com.damienwesterman.defensedrill.security.web.UsersController;
-import com.damienwesterman.defensedrill.security.web.dto.UserCreateDTO;
+import com.damienwesterman.defensedrill.security.web.dto.UserFormDTO;
 import com.damienwesterman.defensedrill.security.web.dto.UserInfoDTO;
 
 @SuppressWarnings("null")
@@ -82,7 +83,7 @@ public class UsersControllerTest {
         ResponseEntity<UserInfoDTO> response =
             restTemplate.postForEntity(
                 URI.create(UsersController.ENDPOINT),
-                entityToCreateDto(user, PASSWORD),
+                entityToFormDto(user, PASSWORD),
                 UserInfoDTO.class
             );
 
@@ -94,17 +95,44 @@ public class UsersControllerTest {
 
     @Test
     public void test_createEndpoint_encodesPassword() {
-        fail();
+        ResponseEntity<UserInfoDTO> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT),
+                entityToFormDto(user, PASSWORD),
+                UserInfoDTO.class
+            );
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotEquals(PASSWORD, repo.findAll().get(0).getPassword());
+        assertTrue(passwordEncoder.matches(PASSWORD, repo.findAll().get(0).getPassword()));
     }
 
     @Test
     public void test_create_fails_withDuplicateName() {
-        fail();
+        repo.save(user);
+
+        ResponseEntity<String> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT),
+                entityToFormDto(user, PASSWORD),
+                String.class
+            );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
     public void test_create_fails_withInvalidRole() {
-        fail();
+        user.setRoles("Invalid");
+
+        ResponseEntity<String> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT),
+                entityToFormDto(user, PASSWORD),
+                String.class
+            );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -135,17 +163,53 @@ public class UsersControllerTest {
 
     @Test
     public void test_findAllByRole_returnsSuccessfully_withMatchingRoles() {
-        fail();
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        repo.save(user);
+
+        UserEntity user2 = UserEntity.builder()
+            .name("Name 2")
+            .password(passwordEncoder.encode("Password 2"))
+            .roles(UserRoles.ADMIN.getStringRepresentation())
+            .build();
+        repo.save(user2);
+
+        ResponseEntity<UserInfoDTO[]> response =
+            restTemplate.getForEntity(
+                URI.create(UsersController.ENDPOINT + "/roles/" + UserRoles.USER.getStringRepresentation()),
+                UserInfoDTO[].class
+            );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().length);
+        assertEquals(USERNAME, response.getBody()[0].getUsername());
     }
 
     @Test
     public void test_findAllByRole_returnsNoContent_withNoMatchingRoles() {
-        fail();
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        repo.save(user);
+
+        ResponseEntity<UserInfoDTO[]> response =
+            restTemplate.getForEntity(
+                URI.create(UsersController.ENDPOINT + "/roles/" + UserRoles.ADMIN.getStringRepresentation()),
+                UserInfoDTO[].class
+            );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     @Test
     public void test_findAllByRole_returnsNoContent_withNonExistentRole() {
-        fail();
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        repo.save(user);
+
+        ResponseEntity<UserInfoDTO[]> response =
+            restTemplate.getForEntity(
+                URI.create(UsersController.ENDPOINT + "/roles/INVALID"),
+                UserInfoDTO[].class
+            );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     @Test
@@ -173,18 +237,140 @@ public class UsersControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
-    /*
-     * TODO:
-     * update - succeeds (changes name)
-     * update - encodes password
-     * update - fails (no name/pass)
-     * update - fails (duplicate name)
-     * update - fails (invalid role)
-     * delete - succeeds
-     */
+    @Test
+    public void test_update_changesName_whenGivenProperInput() {
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        Long userId = repo.save(user).getId();
 
-    private UserCreateDTO entityToCreateDto(UserEntity entity, String unencryptedPassword) {
-        UserCreateDTO ret = new UserCreateDTO();
+        assertEquals(1, repo.findAll().size());
+        assertEquals(USERNAME, repo.findAll().get(0).getName());
+
+        UserFormDTO updateUser = entityToFormDto(user, PASSWORD);
+        String newName = "New User Name";
+        updateUser.setUsername(newName);
+
+        ResponseEntity<UserInfoDTO> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT + "/id/" + userId),
+                updateUser,
+                UserInfoDTO.class
+            );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(newName, response.getBody().getUsername());
+        assertEquals(1, repo.findAll().size());
+        assertEquals(newName, repo.findAll().get(0).getName());
+    }
+
+    @Test
+    public void test_update_encodesPassword() {
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        Long userId = repo.save(user).getId();
+
+        UserFormDTO updateUser = entityToFormDto(user, PASSWORD);
+        String newPassword = "New Password";
+        updateUser.setPassword(newPassword);
+
+        ResponseEntity<UserInfoDTO> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT + "/id/" + userId),
+                updateUser,
+                UserInfoDTO.class
+            );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotEquals(newPassword, repo.findAll().get(0).getPassword());
+        assertTrue(passwordEncoder.matches(newPassword, repo.findAll().get(0).getPassword()));
+    }
+
+    @Test
+    public void test_update_fails404_withNonexistentId() {
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        Long userId = repo.save(user).getId();
+
+        assertEquals(1, repo.findAll().size());
+        assertEquals(USERNAME, repo.findAll().get(0).getName());
+
+        UserFormDTO updateUser = entityToFormDto(user, PASSWORD);
+        String newName = "New User Name";
+        updateUser.setUsername(newName);
+
+        ResponseEntity<String> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT + "/id/" + (userId + 1)),
+                updateUser,
+                String.class
+            );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(1, repo.findAll().size());
+        assertEquals(USERNAME, repo.findAll().get(0).getName());
+    }
+
+    @Test
+    public void test_update_fails_withDuplicateName() {
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        repo.save(user);
+
+        String nonDuplicateName = "Name 2";
+        UserEntity user2 = UserEntity.builder()
+            .name(nonDuplicateName)
+            .password(passwordEncoder.encode("Password 2"))
+            .roles(UserRoles.ADMIN.getStringRepresentation())
+            .build();
+        Long userId = repo.save(user2).getId();
+
+        assertEquals(2, repo.findAll().size());
+        assertEquals(nonDuplicateName, repo.findById(userId).get().getName());
+
+        UserFormDTO updateUser = entityToFormDto(user2, PASSWORD);
+        updateUser.setUsername(USERNAME);
+
+        ResponseEntity<String> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT + "/id/" + userId ),
+                updateUser,
+                String.class
+            );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(2, repo.findAll().size());
+        assertEquals(nonDuplicateName, repo.findById(userId).get().getName());
+    }
+
+    @Test
+    public void test_udpate_fails_withInvalidRole() {
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        Long userId = repo.save(user).getId();
+
+        UserFormDTO updateUser = entityToFormDto(user, PASSWORD);
+        updateUser.setRoles(List.of("INVALID"));
+
+        ResponseEntity<String> response =
+            restTemplate.postForEntity(
+                URI.create(UsersController.ENDPOINT + "/id/" + userId),
+                updateUser,
+                String.class
+            );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void test_delete_succeeds() {
+        user.setRoles(UserRoles.USER.getStringRepresentation());
+        Long userId = repo.save(user).getId();
+        assertEquals(1, repo.findAll().size());
+
+        restTemplate.delete(
+            URI.create(UsersController.ENDPOINT + "/id/" + userId)
+        );
+
+        assertEquals(0, repo.findAll().size());
+    }
+
+    private UserFormDTO entityToFormDto(UserEntity entity, String unencryptedPassword) {
+        UserFormDTO ret = new UserFormDTO();
         ret.setUsername(entity.getName());
         ret.setPassword(unencryptedPassword);
         ret.setRoles(List.of(entity.getRoles().split(",")));

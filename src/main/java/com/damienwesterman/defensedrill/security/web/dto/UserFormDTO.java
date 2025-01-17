@@ -43,7 +43,7 @@ import lombok.Data;
  * TODO: Doc comments
  */
 @Data
-public class UserCreateDTO {
+public class UserFormDTO {
     @NotEmpty
     @Size(min = 6, max = 31)
     private String username;
