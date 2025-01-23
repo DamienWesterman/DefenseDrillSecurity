@@ -39,7 +39,7 @@ import com.damienwesterman.defensedrill.security.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 
 /**
- * TODO: Doc comments
+ * Service class for loading a user's info by their username.
  */
 @Service
 @RequiredArgsConstructor
@@ -58,8 +58,21 @@ public class DrillUserDetailsService implements UserDetailsService {
         return User.builder()
             .username(user.getName())
             .password(user.getPassword())
-            // TODO: surround the following in a method that does null/empty/etc. checks
-            .roles(user.getRoles().split(","))
+            .roles(getRolesAsList(user))
             .build();
+    }
+
+    /**
+     * Split a string of roles into a list of string roles. Does validation checking.
+     *
+     * @param user User
+     * @return List of roles.
+     */
+    private String[] getRolesAsList(UserEntity user) throws UsernameNotFoundException {
+        if (null == user.getRoles() || user.getRoles().isEmpty()) {
+            throw new UsernameNotFoundException(user.getName());
+        }
+
+        return user.getRoles().split(",");
     }
 }

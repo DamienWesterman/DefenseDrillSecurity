@@ -57,7 +57,7 @@ public class RestAuthenticationController {
             throw new UsernameNotFoundException("Invalid Credentials");
         }
 
-        return jwtService.generateWebToken(
+        return jwtService.generateToken(
             userDetailsService.loadUserByUsername(login.username())
         );
     }

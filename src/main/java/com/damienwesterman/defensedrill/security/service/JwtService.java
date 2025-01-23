@@ -42,12 +42,14 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.damienwesterman.defensedrill.security.util.Constants;
+import com.damienwesterman.defensedrill.security.util.Constants.UserRoles;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -55,41 +57,78 @@ import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * TODO: Doc comments (on all methods too)
+ * Service class for JWT interaction. Provides methods to generate, check, and interpret JWT.
  */
 @Service
 @Slf4j
 public class JwtService {
-    private static final long MOBILE_MILLIS_VALID = TimeUnit.DAYS.toMillis(31);
-    private static final long WEB_MILLIS_VALID = TimeUnit.MINUTES.toMillis(30);
+    private static final long MILLIS_VALID_USER = TimeUnit.DAYS.toMillis(31);
+    private static final long MILLIS_VALID_ADMIN = TimeUnit.MINUTES.toMillis(30);
     private static final String CLAIMS_KEY_ROLES = "roles";
 
-    public String generateMobileToken(UserDetails userDetails) {
-        return generateTokenInternal(userDetails, MOBILE_MILLIS_VALID);
-    }
-
-    public String generateWebToken(UserDetails userDetails) {
-        return generateTokenInternal(userDetails, WEB_MILLIS_VALID);
-    }
-
+    /**
+     * Check if a JWT is valid.
+     *
+     * @param jwt String JWT
+     * @return true/false if the token is valid
+     */
     public boolean isTokenValid(String jwt) {
         return Optional.ofNullable(getClaims(jwt)).isPresent();
     }
 
+    /**
+     * Extract a user's username from a JWT.
+     *
+     * @param jwt String JWT
+     * @return Username
+     */
+    @NonNull
     public String extractUsername(String jwt) {
         return Optional.ofNullable(getClaims(jwt))
             .map(Claims::getSubject)
             .orElse("");
     }
 
+    /**
+     * Extract a user's roles from a JWT.
+     *
+     * @param jwt String JWT
+     * @return Roles concatenated into a single string using ","
+     */
+    @NonNull
     public String extractRoles(String jwt) {
         return Optional.ofNullable(getClaims(jwt))
             .map(claims -> (String) claims.get(CLAIMS_KEY_ROLES))
             .orElse("");
     }
 
-    // TODO: Expose this and change teh millisValid to be based on the role, maybe add a mobile role
-    private String generateTokenInternal(UserDetails userDetails, long millisValid) {
+    /**
+     * Get a long value of the milliseconds a JWT [cookie] should be valid from
+     * a user's roles.
+     *
+     * @param roles Roles concatenated into a single string using ","
+     * @return Long of the milliseconds a user's JWT should be valid, 0 on error
+     */
+    public long getMillisValid(String roles) {
+        if (null != roles && roles.isEmpty()) {
+            if (roles.contains(UserRoles.ADMIN.getStringRepresentation())) {
+                return MILLIS_VALID_ADMIN;
+            } else if (roles.contains(UserRoles.USER.getStringRepresentation())) {
+                return MILLIS_VALID_USER;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Generate a string JWT from a UserDetails object.
+     *
+     * @param userDetails UserDetails object
+     * @return String containing the generated JWT
+     */
+    @NonNull
+    public String generateToken(UserDetails userDetails) {
         Map<String, String> claims = new HashMap<>();
         claims.put("iss", Constants.JWT_ISSUER);
         String roles = userDetails.getAuthorities().stream()
@@ -101,11 +140,17 @@ public class JwtService {
             .claims(claims)
             .subject(userDetails.getUsername())
             .issuedAt(Date.from(Instant.now()))
-            .expiration(Date.from(Instant.now().plusMillis(millisValid)))
+            .expiration(Date.from(Instant.now().plusMillis(getMillisValid(roles))))
             .signWith(generatePrivateKey())
             .compact();
     }
 
+    /**
+     * Extract the claims from a JWT string. May return null on error.
+     *
+     * @param jwt String JWT
+     * @return Claims object, may be null on error
+     */
     @Nullable
     private Claims getClaims(String jwt) {
         if (null == jwt || jwt.isBlank()) {

@@ -49,7 +49,7 @@ import com.damienwesterman.defensedrill.security.exception.DatabaseInsertExcepti
 import com.damienwesterman.defensedrill.security.web.dto.ErrorMessageDTO;
 
 /**
- * TODO: Doc comments
+ * Error handling controller for all exceptions.
  */
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -133,6 +133,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<ErrorMessageDTO> handleLockingFailureException(ObjectOptimisticLockingFailureException oolfe) {
+        // Ex. Database object has been updated and user is trying to update on old data
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(ErrorMessageDTO.builder()
                 .error("Update Conflict")

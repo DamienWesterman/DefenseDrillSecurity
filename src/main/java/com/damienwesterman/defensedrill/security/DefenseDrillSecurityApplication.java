@@ -33,8 +33,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 @EnableDiscoveryClient
 public class DefenseDrillSecurityApplication {
-	// TODO: make sure to make the global exception handler (check every time of exception we throw, plus those handled in mvc) - should maybe return /login?error=true
-	// TODO: Double check all endpoints and their access
+	// TODO: Double check all endpoints and their access (in the gateway, there should be publically reachable endpoints such as login logout the mvc error pages favicon main.js and main.css authorize and check all others if possible)
 	// TODO: Address all startup warnings
 
 	public static void main(String[] args) {

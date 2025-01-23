@@ -56,11 +56,11 @@ public class UserFormDTO {
     private List<String> roles;
 
     /**
-     * TODO: Doc comments
+     * Transform this DTO into a UserEntity.
      *
-     * @param id
-     * @param passwordEncoder
-     * @return
+     * @param id UserEntity ID
+     * @param passwordEncoder Password encoder
+     * @return UserEntity representation
      */
     public UserEntity toEntity(@Nullable Long id, @NonNull PasswordEncoder passwordEncoder) {
         return UserEntity.builder()

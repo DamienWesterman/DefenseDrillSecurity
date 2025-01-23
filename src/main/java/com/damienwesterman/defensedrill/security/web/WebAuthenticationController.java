@@ -56,7 +56,7 @@ public class WebAuthenticationController {
 
     @GetMapping("/login")
     public String loginPage() {
-        // TODO: implement here and in html the thymeleaf to address errors
+        // TODO: implement here and in html the thymeleaf to address errors (errorMessage, or something else as a path parameter or whatever)
         return "login";
     }
 
@@ -71,7 +71,7 @@ public class WebAuthenticationController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Credentials");
         }
 
-        String jwtToken = jwtService.generateWebToken(
+        String jwtToken = jwtService.generateToken(
             userDetailsService.loadUserByUsername(login.username())
         );
 
@@ -82,8 +82,9 @@ public class WebAuthenticationController {
                 // .secure(false)
                 .sameSite("Strict")
                 .path("/")
-                // TODO: Get this down better, maybe a method somewhere that returns depending on the roles
-                .maxAge(3000)
+                .maxAge(jwtService.getMillisValid(
+                    jwtService.extractRoles(jwtToken)
+                ))
                 .build();
 
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
@@ -93,7 +94,7 @@ public class WebAuthenticationController {
             .build();
     }
 
-    @GetMapping("/logout")
+    @GetMapping("/log_out")
     public String logoutPage() {
         // TODO: Figure out how to delete the cookie
         return "logout";

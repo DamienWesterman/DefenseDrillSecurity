@@ -68,7 +68,7 @@ public class SecurityConfig {
             .authenticationProvider(authenticationProvider())
             .httpBasic(HttpBasicConfigurer::disable)
             .formLogin(FormLoginConfigurer::disable)
-            // TODO: Figure out the proper csrf
+            // We will leave this disabled as we have marked our JWT cookie as SameSite=Strict
             .csrf(AbstractHttpConfigurer::disable)
             .build();
     }
