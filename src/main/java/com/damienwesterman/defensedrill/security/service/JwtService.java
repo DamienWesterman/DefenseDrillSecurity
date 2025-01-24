@@ -110,7 +110,7 @@ public class JwtService {
      * @return Long of the milliseconds a user's JWT should be valid, 0 on error
      */
     public long getMillisValid(String roles) {
-        if (null != roles && roles.isEmpty()) {
+        if (null != roles && !roles.isEmpty()) {
             if (roles.contains(UserRoles.ADMIN.getStringRepresentation())) {
                 return MILLIS_VALID_ADMIN;
             } else if (roles.contains(UserRoles.USER.getStringRepresentation())) {

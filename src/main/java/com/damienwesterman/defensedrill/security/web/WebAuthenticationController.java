@@ -37,11 +37,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.damienwesterman.defensedrill.security.service.DrillUserDetailsService;
 import com.damienwesterman.defensedrill.security.service.JwtService;
+import com.damienwesterman.defensedrill.security.util.Constants;
 import com.damienwesterman.defensedrill.security.web.dto.LoginDTO;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -78,8 +78,7 @@ public class WebAuthenticationController {
         // set accessToken to cookie header
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", jwtToken)
                 .httpOnly(true)
-                // TODO: uncomment in production
-                // .secure(false)
+                .secure(Constants.isProductionServer())
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(jwtService.getMillisValid(
@@ -88,22 +87,25 @@ public class WebAuthenticationController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                // TODO: Test this, how do we propogate the starting point?
+                // TODO: Test this, how do we propogate the starting point? TBD with gateway
             .header(HttpHeaders.LOCATION, "/")
             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
             .build();
     }
 
     @GetMapping("/log_out")
-    public String logoutPage() {
-        // TODO: Figure out how to delete the cookie
-        return "logout";
-    }
+    public String logoutPage(HttpServletResponse response) {
+        // Just clear out and expire the cookie
+        ResponseCookie clearCookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(Constants.isProductionServer())
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0)
+                .build();
 
-    // TODO: REMOVE after testing
-    @GetMapping("/")
-    @ResponseBody
-    public String home() {
-        return "Home Page";
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
+
+        return "logout";
     }
 }
