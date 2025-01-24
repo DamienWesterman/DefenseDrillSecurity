@@ -38,7 +38,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -73,12 +72,6 @@ public class SecurityConfig {
             .build();
     }
 
-    @Bean
-    UserDetailsService userDetailsService() {
-        return userDetailsService;
-    }
-
-    @Bean
     AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
