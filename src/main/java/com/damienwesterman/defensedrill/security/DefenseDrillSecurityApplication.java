@@ -34,6 +34,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 public class DefenseDrillSecurityApplication {
 	// TODO: Double check all endpoints and their access (in the gateway, there should be publically reachable endpoints such as login logout the mvc error pages favicon main.js and main.css authorize and check all others if possible)
+	// TODO: Double check in gateway instruction if favicon and main.css (double check necessary/additional classes) is necessasry
 	// TODO: Address all startup warnings
 
 	public static void main(String[] args) {

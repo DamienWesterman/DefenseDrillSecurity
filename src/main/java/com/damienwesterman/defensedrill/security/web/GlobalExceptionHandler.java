@@ -37,6 +37,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -47,6 +48,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.damienwesterman.defensedrill.security.exception.DatabaseInsertException;
 import com.damienwesterman.defensedrill.security.web.dto.ErrorMessageDTO;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Error handling controller for all exceptions.
@@ -152,14 +155,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             );
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ErrorMessageDTO> handleUsernameNotFoundException(UsernameNotFoundException unfe) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(ErrorMessageDTO.builder()
-                .error("Invalid Credentials")
-                .message(unfe.getMessage())
-                .build()
-            );
+    @ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
+    public void handleUsernameNotFoundException(HttpServletResponse response) {
+        // Redirect to login screen with error message
+        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+        response.setHeader(HttpHeaders.LOCATION, "/login?error=Invalid%20Credentials");
     }
 
     @ExceptionHandler(Exception.class)

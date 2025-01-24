@@ -32,6 +32,11 @@ a:hover {
     text-align: center;
 }
 
+.error {
+    color: #ba3939;
+    background: #ffe0e0;
+}
+
 .header-container {
     display: flex;
     align-items: center;

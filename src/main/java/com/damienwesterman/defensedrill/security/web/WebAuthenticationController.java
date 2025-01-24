@@ -34,9 +34,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.damienwesterman.defensedrill.security.service.DrillUserDetailsService;
@@ -55,8 +57,8 @@ public class WebAuthenticationController {
     private final JwtService jwtService;
 
     @GetMapping("/login")
-    public String loginPage() {
-        // TODO: implement here and in html the thymeleaf to address errors (errorMessage, or something else as a path parameter or whatever)
+    public String loginPage(Model model, @RequestParam(required = false) String error) {
+        model.addAttribute("errorMessage", error);
         return "login";
     }
 
