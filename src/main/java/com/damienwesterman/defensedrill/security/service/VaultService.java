@@ -27,23 +27,16 @@
 package com.damienwesterman.defensedrill.security.service;
 
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-import org.springframework.vault.core.VaultTemplate;
-import org.springframework.vault.support.VaultResponse;
-import lombok.RequiredArgsConstructor;
-/**
- * Service class to interact with the HashiCorp Vault KMS.
- */
-@Service
-@RequiredArgsConstructor
-public class VaultService {
-    private final VaultTemplate vaultTemplate;
 
+/**
+ * Service interface to retrieve public/private jwt keys.
+ */
+public interface VaultService {
     // TODO: In deployment, make profiles in Vault, which will change the endpoint for private key (and security probs)
-    private final static String VAULT_ENDPOINT_JWT_PRIVATE_KEY = "secret/security";
-    private final static String VAULT_ENDPOINT_JWT_PUBLIC_KEY = "secret/public";
-    private final static String VAULT_KEY_JWT_PRIVATE_KEY = "jwtPrivateKey";
-    private final static String VAULT_KEY_JWT_PUBLIC_KEY = "jwtPublicKey";
+    final static String VAULT_ENDPOINT_JWT_PRIVATE_KEY = "secret/security";
+    final static String VAULT_ENDPOINT_JWT_PUBLIC_KEY = "secret/public";
+    final static String VAULT_KEY_JWT_PRIVATE_KEY = "jwtPrivateKey";
+    final static String VAULT_KEY_JWT_PUBLIC_KEY = "jwtPublicKey";
 
     /**
      * Retrieve the JWT public key.
@@ -51,15 +44,7 @@ public class VaultService {
      * @return JWT public key
      */
     @NonNull
-	public String getJwtPublicKey() {
-        VaultResponse response = vaultTemplate.read(VAULT_ENDPOINT_JWT_PUBLIC_KEY);
-
-        if (null == response || null == response.getData()) {
-            throw new RuntimeException("Failed to get public key from fault, please check Vault and restart server");
-        }
-
-        return (String) response.getData().get(VAULT_KEY_JWT_PUBLIC_KEY);
-	}
+	public String getJwtPublicKey();
 
     /**
      * Retrieve the JWT private key.
@@ -67,13 +52,5 @@ public class VaultService {
      * @return JWT private key
      */
     @NonNull
-    public String getJwtPrivateKey() {
-        VaultResponse response = vaultTemplate.read(VAULT_ENDPOINT_JWT_PRIVATE_KEY);
-
-        if (null == response || null == response.getData()) {
-            throw new RuntimeException("Failed to get private key from fault, please check Vault and restart server");
-        }
-
-        return (String) response.getData().get(VAULT_KEY_JWT_PRIVATE_KEY);
-    }
+    public String getJwtPrivateKey();
 }

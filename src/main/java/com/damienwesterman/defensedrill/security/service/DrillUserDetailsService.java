@@ -28,6 +28,7 @@ package com.damienwesterman.defensedrill.security.service;
 
 import java.util.Optional;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -68,7 +69,8 @@ public class DrillUserDetailsService implements UserDetailsService {
      * @param user User
      * @return List of roles.
      */
-    private String[] getRolesAsList(UserEntity user) throws UsernameNotFoundException {
+    @NonNull
+    private String[] getRolesAsList(@NonNull UserEntity user) throws UsernameNotFoundException {
         if (null == user.getRoles() || user.getRoles().isEmpty()) {
             throw new UsernameNotFoundException(user.getName());
         }
