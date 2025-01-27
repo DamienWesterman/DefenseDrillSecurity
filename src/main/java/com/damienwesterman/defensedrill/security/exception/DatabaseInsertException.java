@@ -24,20 +24,17 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.exception;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+/**
+ * Exception for any issue with saving or updating database entities.
+ */
+public class DatabaseInsertException extends RuntimeException {
+    public DatabaseInsertException(String message) {
+        super(message);
+    }
 
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: Double check all endpoints and their access (in the gateway, there should be publically reachable endpoints such as login logout the mvc error pages favicon main.js and main.css authorize and check all others if possible)
-	// TODO: Double check in gateway instruction if favicon and main.css (double check necessary/additional classes) is necessasry
-
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
-
+    public DatabaseInsertException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

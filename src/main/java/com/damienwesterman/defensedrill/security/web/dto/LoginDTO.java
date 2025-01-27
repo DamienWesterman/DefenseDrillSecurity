@@ -24,20 +24,7 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.web.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: Double check all endpoints and their access (in the gateway, there should be publically reachable endpoints such as login logout the mvc error pages favicon main.js and main.css authorize and check all others if possible)
-	// TODO: Double check in gateway instruction if favicon and main.css (double check necessary/additional classes) is necessasry
-
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
-
+public record LoginDTO(String username, String password) {
 }

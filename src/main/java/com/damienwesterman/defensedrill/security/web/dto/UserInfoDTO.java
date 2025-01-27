@@ -24,20 +24,34 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.web.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import java.util.List;
 
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: Double check all endpoints and their access (in the gateway, there should be publically reachable endpoints such as login logout the mvc error pages favicon main.js and main.css authorize and check all others if possible)
-	// TODO: Double check in gateway instruction if favicon and main.css (double check necessary/additional classes) is necessasry
+import org.springframework.lang.NonNull;
 
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
+import com.damienwesterman.defensedrill.security.entity.UserEntity;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+/**
+ * Contains all the public data for a user.
+ */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserInfoDTO {
+    private Long id;
+    private String username;
+    private List<String> roles;
+
+    public UserInfoDTO(@NonNull UserEntity entity) {
+        this.id = entity.getId();
+        this.username = entity.getName();
+        this.roles = List.of(entity.getRoles().split(","));
+    }
 }

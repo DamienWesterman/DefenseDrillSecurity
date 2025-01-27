@@ -1,0 +1,174 @@
+/****************************\
+ *      ________________      *
+ *     /  _             \     *
+ *     \   \ |\   _  \  /     *
+ *      \  / | \ / \  \/      *
+ *      /  \ | / | /  /\      *
+ *     /  _/ |/  \__ /  \     *
+ *     \________________/     *
+ *                            *
+ \****************************/
+/*
+ * Copyright 2025 Damien Westerman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.damienwesterman.defensedrill.security.web;
+
+import java.util.NoSuchElementException;
+
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import com.damienwesterman.defensedrill.security.exception.DatabaseInsertException;
+import com.damienwesterman.defensedrill.security.web.dto.ErrorMessageDTO;
+
+import jakarta.servlet.http.HttpServletResponse;
+
+/**
+ * Error handling controller for all exceptions.
+ */
+@ControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    @Override
+    @Nullable
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(@NonNull MethodArgumentNotValidException ex,
+            @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
+        // Ex. user provides bad jakarta constraints and fails validation
+        StringBuilder errorMessage = new StringBuilder();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errorMessage.append(Character.toUpperCase(error.getField().charAt(0)));
+            errorMessage.append(error.getField().substring(1));
+            errorMessage.append(' ');
+            errorMessage.append(error.getDefaultMessage());
+            errorMessage.append(". ");
+        });
+
+        return ResponseEntity.badRequest()
+            .body(ErrorMessageDTO.builder()
+                .error("Malformed Argument")
+                .message(errorMessage.toString())
+                .build()
+            );
+    }
+
+    @Override
+    @Nullable
+    protected ResponseEntity<Object> handleTypeMismatch(@NonNull TypeMismatchException ex, @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status, @NonNull WebRequest request) {
+        // Ex. user provides a String for a Long path ID variable
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorMessageDTO.builder()
+                .error("Type Mismatch")
+                .message(ex.getLocalizedMessage())
+                .build()
+            );
+    }
+
+    @Override
+    @Nullable
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(@NonNull HttpMessageNotReadableException ex,
+            @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
+        // Ex. user neglects to provide correct body arguments and fails validation
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorMessageDTO.builder()
+                .error("Missing Body")
+                .message("A body is required for this request.")
+                .build()
+            );
+    }
+
+    @ExceptionHandler(DatabaseInsertException.class)
+    public ResponseEntity<ErrorMessageDTO> handleDatabaseInsertException(DatabaseInsertException die) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorMessageDTO.builder()
+                .error("Database Insert Error")
+                .message(die.getMessage())
+                .build()
+            );
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ErrorMessageDTO> handleNoSuchElementException(NoSuchElementException nsee) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ErrorMessageDTO.builder()
+                .error("Resource Not Found")
+                .message(nsee.getMessage())
+                .build()
+            );
+    }
+
+    @ExceptionHandler(IndexOutOfBoundsException.class)
+    public ResponseEntity<ErrorMessageDTO> handleIndexOutOfBoundsException(IndexOutOfBoundsException ioobe) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ErrorMessageDTO.builder()
+                .error("Index Out Of Bounds")
+                .message(ioobe.getMessage())
+                .build()
+            );
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorMessageDTO> handleLockingFailureException(ObjectOptimisticLockingFailureException oolfe) {
+        // Ex. Database object has been updated and user is trying to update on old data
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(ErrorMessageDTO.builder()
+                .error("Update Conflict")
+                .message("Old data: please refresh and try again")
+                .build()
+            );
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorMessageDTO> handleResponseStatusException(ResponseStatusException rse) {
+        return ResponseEntity.status(rse.getStatusCode())
+            .body(ErrorMessageDTO.builder()
+                .error(rse.getStatusCode().toString())
+                .message(rse.getMessage())
+                .build()
+            );
+    }
+
+    @ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
+    public void handleUsernameNotFoundException(HttpServletResponse response) {
+        // Redirect to login screen with error message
+        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+        response.setHeader(HttpHeaders.LOCATION, "/login?error=Invalid%20Credentials");
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorMessageDTO> handleGenericException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ErrorMessageDTO.builder()
+                .error("Unknown Error")
+                .message("An unexpected error has occurred.")
+                .build()
+            );
+    }
+}

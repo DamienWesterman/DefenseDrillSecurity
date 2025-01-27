@@ -24,20 +24,33 @@
  * limitations under the License.
  */
 
-package com.damienwesterman.defensedrill.security;
+package com.damienwesterman.defensedrill.security.service;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.lang.NonNull;
 
-@SpringBootApplication
-@EnableDiscoveryClient
-public class DefenseDrillSecurityApplication {
-	// TODO: Double check all endpoints and their access (in the gateway, there should be publically reachable endpoints such as login logout the mvc error pages favicon main.js and main.css authorize and check all others if possible)
-	// TODO: Double check in gateway instruction if favicon and main.css (double check necessary/additional classes) is necessasry
+/**
+ * Service interface to retrieve public/private jwt keys.
+ */
+public interface VaultService {
+    // TODO: In deployment, make profiles in Vault, which will change the endpoint for private key (and security probs)
+    final static String VAULT_ENDPOINT_JWT_PRIVATE_KEY = "secret/security";
+    final static String VAULT_ENDPOINT_JWT_PUBLIC_KEY = "secret/public";
+    final static String VAULT_KEY_JWT_PRIVATE_KEY = "jwtPrivateKey";
+    final static String VAULT_KEY_JWT_PUBLIC_KEY = "jwtPublicKey";
 
-	public static void main(String[] args) {
-		SpringApplication.run(DefenseDrillSecurityApplication.class, args);
-	}
+    /**
+     * Retrieve the JWT public key.
+     *
+     * @return JWT public key
+     */
+    @NonNull
+	public String getJwtPublicKey();
 
+    /**
+     * Retrieve the JWT private key.
+     *
+     * @return JWT private key
+     */
+    @NonNull
+    public String getJwtPrivateKey();
 }
