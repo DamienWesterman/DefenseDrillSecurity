@@ -66,7 +66,7 @@ public class WebAuthenticationController {
     public ResponseEntity<String> authenticate(@ModelAttribute LoginDTO login, HttpServletResponse response){
         Authentication authentication = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                login.username(), login.password())
+                login.getUsername(), login.getPassword())
         );
 
         if(!authentication.isAuthenticated()){
@@ -74,7 +74,7 @@ public class WebAuthenticationController {
         }
 
         String jwtToken = jwtService.generateToken(
-            userDetailsService.loadUserByUsername(login.username())
+            userDetailsService.loadUserByUsername(login.getUsername())
         );
 
         // set accessToken to cookie header

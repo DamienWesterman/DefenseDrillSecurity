@@ -38,12 +38,14 @@ import org.springframework.stereotype.Service;
 import com.damienwesterman.defensedrill.security.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service class for loading a user's info by their username.
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DrillUserDetailsService implements UserDetailsService {
     private final UserService userService;
 
@@ -72,6 +74,7 @@ public class DrillUserDetailsService implements UserDetailsService {
     @NonNull
     private String[] getRolesAsList(@NonNull UserEntity user) throws UsernameNotFoundException {
         if (null == user.getRoles() || user.getRoles().isEmpty()) {
+            log.error("User <" + user.getName() + "> has invalid roles");
             throw new UsernameNotFoundException(user.getName());
         }
 

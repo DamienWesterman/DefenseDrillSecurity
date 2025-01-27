@@ -154,7 +154,7 @@ public class UserService {
      */
     private boolean isValidRoles(@NonNull String roles) {
         if (roles.isBlank()) {
-            return true;
+            return false;
         }
 
         List<String> rolesList = List.of(roles.split(","));

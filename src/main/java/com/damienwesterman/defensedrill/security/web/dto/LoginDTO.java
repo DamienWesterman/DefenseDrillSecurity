@@ -26,5 +26,17 @@
 
 package com.damienwesterman.defensedrill.security.web.dto;
 
-public record LoginDTO(String username, String password) {
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class LoginDTO {
+    @NotEmpty
+    @Size(min = 6, max = 31)
+    private String username;
+
+    @NotEmpty
+    @Size(min = 8, max = 31)
+    private String password;
 }

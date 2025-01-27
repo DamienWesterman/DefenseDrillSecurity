@@ -72,7 +72,7 @@ public class UsersControllerTest {
             .id(null)
             .name(USERNAME)
             .password(passwordEncoder.encode(PASSWORD))
-            .roles("")
+            .roles(UserRoles.USER.getStringRepresentation())
             .build();
     }
 
