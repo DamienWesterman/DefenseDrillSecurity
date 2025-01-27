@@ -111,6 +111,7 @@ public class JwtService {
      */
     public long getMillisValid(String roles) {
         if (null != roles && !roles.isEmpty()) {
+            // Check in descending order of millis valid, most restrictive when possible
             if (roles.contains(UserRoles.ADMIN.getStringRepresentation())) {
                 return MILLIS_VALID_ADMIN;
             } else if (roles.contains(UserRoles.USER.getStringRepresentation())) {

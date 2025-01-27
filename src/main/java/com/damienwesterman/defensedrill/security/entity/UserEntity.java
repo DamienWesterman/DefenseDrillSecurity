@@ -33,7 +33,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -67,7 +66,7 @@ public class UserEntity {
     private String password;
 
     @Column
-    @NotNull
+    @NotEmpty
     @Size(max = 511)
     /** Comma separated list of roles */
     private String roles;

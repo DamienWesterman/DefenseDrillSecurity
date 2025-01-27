@@ -26,6 +26,8 @@
 
 package com.damienwesterman.defensedrill.security.web;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -48,17 +50,25 @@ public class RestAuthenticationController {
     private final DrillUserDetailsService userDetailsService;
 
     @PostMapping("/authenticate")
-    public String authenticate(@RequestBody LoginDTO login) {
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(login.username(), login.password())
-        );
+    public ResponseEntity<String> authenticate(@RequestBody LoginDTO login) {
+        // Have to surround in a try/catch, otherwise Spring will follow default security response
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword())
+            );
 
-        if (!authentication.isAuthenticated()) {
-            throw new UsernameNotFoundException("Invalid Credentials");
+            if (!authentication.isAuthenticated()) {
+                throw new UsernameNotFoundException("Invalid Credentials");
+            }
+
+            return ResponseEntity.ok(
+                jwtService.generateToken(
+                    userDetailsService.loadUserByUsername(login.getUsername())
+                )
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(e.getMessage());
         }
-
-        return jwtService.generateToken(
-            userDetailsService.loadUserByUsername(login.username())
-        );
     }
 }
