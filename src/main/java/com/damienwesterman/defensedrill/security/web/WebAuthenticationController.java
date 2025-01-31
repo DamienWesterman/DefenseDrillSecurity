@@ -57,13 +57,18 @@ public class WebAuthenticationController {
     private final JwtService jwtService;
 
     @GetMapping("/login")
-    public String loginPage(Model model, @RequestParam(required = false) String error) {
+    public String loginPage(Model model,
+            @RequestParam(required = false) String error,
+            @RequestParam(required = false, defaultValue = "/") String redirect) {
         model.addAttribute("errorMessage", error);
+        model.addAttribute("redirect", redirect);
         return "login";
     }
 
     @PostMapping("/log_in")
-    public ResponseEntity<String> authenticate(@ModelAttribute LoginDTO login, HttpServletResponse response){
+    public ResponseEntity<String> authenticate(HttpServletResponse response,
+            @ModelAttribute LoginDTO login,
+            @RequestParam(required = false, defaultValue = "/") String redirect){
         Authentication authentication = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 login.getUsername(), login.getPassword())
@@ -89,8 +94,7 @@ public class WebAuthenticationController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                // TODO: Test this, how do we propogate the starting point? TBD with gateway
-            .header(HttpHeaders.LOCATION, "/")
+            .header(HttpHeaders.LOCATION, redirect)
             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
             .build();
     }

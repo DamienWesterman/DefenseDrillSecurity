@@ -13,7 +13,7 @@
         <div class="form-container">
             <h1 class="center">Login</h1>
             <div class="center error" th:text="${errorMessage}"></div>
-            <form action="/log_in" method="post">
+            <form th:action="'/log_in?redirect=' + ${redirect}" method="post">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input id="username" name="username" type="text" class="form-input" required>
