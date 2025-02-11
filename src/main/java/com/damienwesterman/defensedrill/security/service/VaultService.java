@@ -32,7 +32,6 @@ import org.springframework.lang.NonNull;
  * Service interface to retrieve public/private jwt keys.
  */
 public interface VaultService {
-    // TODO: In deployment, make profiles in Vault, which will change the endpoint for private key (and security probs)
     final static String VAULT_ENDPOINT_JWT_PRIVATE_KEY = "secret/security";
     final static String VAULT_ENDPOINT_JWT_PUBLIC_KEY = "secret/public";
     final static String VAULT_KEY_JWT_PRIVATE_KEY = "jwtPrivateKey";

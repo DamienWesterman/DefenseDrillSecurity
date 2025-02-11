@@ -7,4 +7,7 @@ CREATE TABLE users(
         NOT NULL,
     roles VARCHAR(511)
         NOT NULL
-)
+);
+
+-- Insert the default admin user: USERNAME: adminadmin PASSWORD: adminadmin
+INSERT INTO users (name, password, roles) VALUES ('adminadmin', '$2a$12$bnYk31yASR3ORzOaZtwLUe8qtahLfgvtuuJWNR8CzSkRUxk30TqcK', 'ADMIN,USER');
