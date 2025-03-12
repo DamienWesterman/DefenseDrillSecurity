@@ -86,7 +86,7 @@ public class RestAuthenticationController {
      * User wants to authenticate and get a JWT for a specific role.
      * <br><br>
      * An example for this might be someone who is a mobile user granted ROLE_USER and ROLE_ADMIN.
-     * The user wants the extended expiration for their JWT using ROLE_USER, so thsi endpoint allows
+     * The user wants the extended expiration for their JWT using ROLE_USER, so this endpoint allows
      * them to specify which role they want to authenticate for.
      *
      * @param login User Login DTO
