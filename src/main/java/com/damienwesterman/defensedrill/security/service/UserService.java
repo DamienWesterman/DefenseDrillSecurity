@@ -153,6 +153,22 @@ public class UserService {
      * @param id User ID.
      */
     public void delete(@NonNull Long id) {
+        Optional<UserEntity> optUser = repo.findById(id);
+        if (optUser.isEmpty()) {
+            // User doesn't exist anyway
+            return;
+        }
+        UserEntity user = optUser.get();
+
+        // Make sure we are not removing the last admin
+        List<UserEntity> admins = findAllByRole(UserRoles.ADMIN.getStringRepresentation());
+        if (1 == admins.size()) {
+            if (admins.get(0).getName().equals(user.getName())) {
+                // This operation would otherwise delete the last remaining admin, so stop it
+                throw new DatabaseInsertException("Cannot remove the last admin");
+            }
+        }
+
         repo.deleteById(id);
     }
 

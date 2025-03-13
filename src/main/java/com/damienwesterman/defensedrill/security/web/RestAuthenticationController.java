@@ -51,9 +51,10 @@ import com.damienwesterman.defensedrill.security.web.dto.LoginDTO;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping(RestAuthenticationController.ENDPOINT)
 @RequiredArgsConstructor
-@RequestMapping("/authenticate")
 public class RestAuthenticationController {
+    private static final String ENDPOINT = "/authenticate";
 
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
