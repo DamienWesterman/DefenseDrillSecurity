@@ -39,6 +39,7 @@ import com.damienwesterman.defensedrill.security.entity.UserEntity;
 import com.damienwesterman.defensedrill.security.exception.DatabaseInsertException;
 import com.damienwesterman.defensedrill.security.repository.UserRepository;
 import com.damienwesterman.defensedrill.security.util.Constants;
+import com.damienwesterman.defensedrill.security.util.Constants.UserRoles;
 
 import lombok.RequiredArgsConstructor;
 
@@ -133,6 +134,16 @@ public class UserService {
             throw new DatabaseInsertException("Roles are not valid");
         }
 
+        // Make sure we are not removing the last admin
+        List<UserEntity> admins = findAllByRole(UserRoles.ADMIN.getStringRepresentation());
+        if (1 == admins.size()) {
+            if (admins.get(0).getId().equals(user.getId())
+                    && !hasAdminRole(user.getRoles())) {
+                // This operation would otherwise delete the last remaining admin, so stop it
+                throw new DatabaseInsertException("Cannot remove the last admin");
+            }
+        }
+
         return ErrorMessageUtils.trySave(user, repo);
     }
 
@@ -142,6 +153,15 @@ public class UserService {
      * @param id User ID.
      */
     public void delete(@NonNull Long id) {
+        // Make sure we are not removing the last admin
+        List<UserEntity> admins = findAllByRole(UserRoles.ADMIN.getStringRepresentation());
+        if (1 == admins.size()) {
+            if (admins.get(0).getId().equals(id)) {
+                // This operation would otherwise delete the last remaining admin, so stop it
+                throw new DatabaseInsertException("Cannot remove the last admin");
+            }
+        }
+
         repo.deleteById(id);
     }
 
@@ -161,5 +181,21 @@ public class UserService {
 
         // Check if each role in rolesList is in the ALL_ROLES_LIST
         return Constants.ALL_ROLES_LIST.containsAll(rolesList);
+    }
+
+    /**
+     * Check if a user's list of roles contains the Admin role.
+     *
+     * @param roles String representation of a comma separated list of roles.
+     * @return true/false if the user is granted the Admin role.
+     */
+    private boolean hasAdminRole(@NonNull String roles) {
+        if (roles.isBlank()) {
+            return false;
+        }
+
+        List<String> rolesList = List.of(roles.split(","));
+
+        return rolesList.contains(UserRoles.ADMIN.getStringRepresentation());
     }
 }

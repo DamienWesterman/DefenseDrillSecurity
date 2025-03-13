@@ -109,7 +109,7 @@ public class UsersController {
 
     @PostMapping("/id/{id}")
     public ResponseEntity<UserInfoDTO> updateUserById(@PathVariable Long id,
-            @RequestBody UserFormDTO user) {
+            @RequestBody @Valid UserFormDTO user) {
         if (service.find(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
