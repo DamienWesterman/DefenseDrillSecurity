@@ -54,7 +54,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping(RestAuthenticationController.ENDPOINT)
 @RequiredArgsConstructor
 public class RestAuthenticationController {
-    private static final String ENDPOINT = "/authenticate";
+    public static final String ENDPOINT = "/authenticate";
 
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
